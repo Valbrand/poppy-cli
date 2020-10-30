@@ -9,21 +9,21 @@
 
 (s/def ::validation-report (validator.spec/validation-report-spec ::spec/new-transaction))
 
-(ds/defn ^:private total-amount :- :movement/amount
+(ds/defn ^:private total-amount :- :new-movement/amount
   [movements :- (s/coll-of ::spec/movement)]
   (->> movements
-       (map :movement/amount)
+       (map :new-movement/amount)
        (reduce money/add money/ZERO)))
 
 (ds/defn ^:private outstanding-currency-change-error :- ::validator.spec/error
   [currency :- :movement/currency
-   outstanding-total :- :movement/amount]
+   outstanding-total :- :new-movement/amount]
   {:message (format "Total balance change for all currencies in a transaction must sum to zero. %s currency is changing by %s" currency outstanding-total)
    :details {:currency currency
              :outstanding-value outstanding-total}})
 
 (ds/defn ^:private outstanding-currency-change :- ::validator.spec/error
-  [input :- (s/tuple :movement/currency :movement/amount)]
+  [input :- (s/tuple :movement/currency :new-movement/amount)]
   (let [[currency value] input]
     (when-not (money/zero-value? value)
       (outstanding-currency-change-error currency value))))
@@ -32,8 +32,8 @@
   [validation-report :- ::validation-report]
   (let [{transaction :entry} validation-report
         movement-totals-by-currency (->> transaction
-                                         :transaction/movements
-                                         (group-by :movement/currency)
+                                         :new-transaction/movements
+                                         (group-by :new-movement/currency)
                                          (utils/map-vals total-amount))
         outstanding-currency-change (delay
                                      (some outstanding-currency-change movement-totals-by-currency))]

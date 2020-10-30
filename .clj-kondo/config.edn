@@ -1,0 +1,2 @@
+{:lint-as {net.danielcompton.defn-spec-alpha/defn schema.core/defn
+           budget.v2.parser.core/defparser clojure.core/def}}
