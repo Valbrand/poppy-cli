@@ -15,17 +15,14 @@
                           :db/cardinality :db.cardinality/many
                           :db/doc "Transactions related to this account"}})
 
-(defn ds->account
+(ds/defn ds->account :- ::model.account/account
   [ds-entity]
   (let [{:account/keys [name transactions]} ds-entity]
     {:account/name name
      :account/transactions (map model.ds.transaction/ds->transaction transactions)}))
 
-(defn account->ds
-  [account]
+(ds/defn account->ds
+  [account :- ::model.account/account]
   (let [{:account/keys [name transactions]} account]
     {:account/name name
      :account/transactions (map model.ds.transaction/transaction->ds transactions)}))
-
-(comment
-  (s/exercise ::account 1))
