@@ -30,6 +30,3 @@
                            :db/cardinality :db.cardinality/many
                            :db/isComponent true
                            :db/doc         "Money movements being made on this transaction"}})
-
-(comment
-  (s/exercise ::transaction 1))

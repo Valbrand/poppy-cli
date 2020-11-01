@@ -37,14 +37,3 @@
 (s/def :account/transactions (s/coll-of :budget.v2.model.transaction/transaction))
 
 (s/def ::account (s/keys :opt [:account/name :account/balance :account/transactions]))
-
-(def datascript-schema
-  {:account/name {:db/cardinality :db.cardinality/one
-                  :db/doc "Account name"
-                  :db/unique :db.unique/identity}
-   :account/transactions {:db/valueType :db.type/ref
-                          :db/cardinality :db.cardinality/many
-                          :db/doc "Transactions related to this account"}})
-
-(comment
-  (s/exercise ::account 1))

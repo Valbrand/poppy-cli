@@ -1,5 +1,6 @@
 (ns budget.v2.model.datascript.transaction
   (:require [budget.v2.model.transaction :as model.transaction]
+            [budget.v2.model.datascript.money :as model.ds.money]
             [net.danielcompton.defn-spec-alpha :as ds]))
 
 (def schema
@@ -25,14 +26,14 @@
   (let [{:movement/keys [from to value]} ds-movement]
     {:movement/from  (:account/name from)
      :movement/to    (:account/name to)
-     :movement/value value}))
+     :movement/value (model.ds.money/ds->money value)}))
 
 (ds/defn movement->ds
   [movement :- ::model.transaction/movement]
   (let [{:movement/keys [from to value]} movement]
-    {:movement/from [:account/name from]
-     :movement/to [:account/name to]
-     :movement/value value}))
+    {:movement/from  [:account/name from]
+     :movement/to    [:account/name to]
+     :movement/value (model.ds.money/money->ds value)}))
 
 (ds/defn ds->transaction :- ::model.transaction/transaction
   [ds-entity]

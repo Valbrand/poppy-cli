@@ -16,13 +16,7 @@
                               #(gen/fmap keyword 
                                          (gen/keyword))))
 
-(s/def ::money (s/keys :req-un [::value ::currency]))
-
-(def datascript-schema
-  {:money/value    {:db/cardinality :db.cardinality/one
-                    :db/doc         "Money amount"}
-   :money/currency {:db/cardinality :db.cardinality/one
-                    :db/doc         "Currency tied to the amount"}})
+(s/def ::money (s/keys :req [::value ::currency]))
 
 (def add +)
 (def zero-value? clojure.core/zero?)

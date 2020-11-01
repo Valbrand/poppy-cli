@@ -1,13 +1,9 @@
 (ns budget.v2.model.datascript.account
   (:require [budget.v2.model.account :as model.account]
             [budget.v2.model.datascript.transaction :as model.ds.transaction]
-            [budget.v2.model.money :as model.money]
-            [clojure.spec.alpha :as s]
-            [clojure.spec.gen.alpha :as gen]
-            [clojure.string :as str]
             [net.danielcompton.defn-spec-alpha :as ds]))
 
-(def datascript-schema
+(def schema
   {:account/name {:db/cardinality :db.cardinality/one
                   :db/doc "Account name"
                   :db/unique :db.unique/identity}
@@ -26,3 +22,7 @@
   (let [{:account/keys [name transactions]} account]
     {:account/name name
      :account/transactions (map model.ds.transaction/transaction->ds transactions)}))
+
+(defn ds-transactions
+  [ds-account]
+  (:account/transactions ds-account))
