@@ -1,6 +1,7 @@
 (ns budget.v2.model.datascript.transaction
-  (:require [budget.v2.model.money :as model.money]
-            [clojure.spec.alpha :as s]))
+  (:require [budget.v2.model.transaction :as model.transaction]
+            [budget.v2.model.datascript.money :as model.ds.money]
+            [net.danielcompton.defn-spec-alpha :as ds]))
 
 (def schema
   {:movement/from         {:db/valueType   :db.type/ref
@@ -20,26 +21,26 @@
                            :db/isComponent true
                            :db/doc         "Money movements being made on this transaction"}})
 
-(defn ds->movement
+(ds/defn ds->movement :- ::model.transaction/movement
   [ds-movement]
   (let [{:movement/keys [from to value]} ds-movement]
     {:movement/from  (:account/name from)
      :movement/to    (:account/name to)
-     :movement/value value}))
+     :movement/value (model.ds.money/ds->money value)}))
 
-(defn movement->ds
-  [movement]
+(ds/defn movement->ds
+  [movement :- ::model.transaction/movement]
   (let [{:movement/keys [from to value]} movement]
-    {:movement/from [:account/name from]
-     :movement/to [:account/name to]
-     :movement/value value}))
+    {:movement/from  [:account/name from]
+     :movement/to    [:account/name to]
+     :movement/value (model.ds.money/money->ds value)}))
 
-(defn ds->transaction
+(ds/defn ds->transaction :- ::model.transaction/transaction
   [ds-entity]
   (let [{:transaction/keys [movements]} ds-entity]
     {:transaction/movements (map ds->movement movements)}))
 
-(defn transaction->ds
-  [transaction]
+(ds/defn transaction->ds
+  [transaction :- ::model.transaction/transaction]
   (let [{:transaction/keys [movements]} transaction]
     {:transaction/movements (map movement->ds movements)}))

@@ -1,9 +1,19 @@
 (ns budget.v2.utils
-  (:require [clojure.spec.alpha :as s]))
+  (:require [clojure.set :as set]
+            [clojure.spec.alpha :as s]))
+
+(defn- conflicting-keys
+  [& maps]
+  (let [map-keys (map (comp set keys) maps)
+        all-conflicts (for [i (range 0 (count maps))
+                            j (range (inc i) (count maps))]
+                        (set/intersection (nth map-keys i) (nth map-keys j)))]
+    (apply set/union all-conflicts)))
 
 (defn- safe-merge-error
   [maps & _]
-  (throw (ex-info "safe-merge could not be performed: key conflict" {:arguments maps})))
+  (throw (ex-info (str "safe-merge could not be performed: key conflicts " (apply conflicting-keys maps))
+                  {:arguments maps})))
 
 (defn safe-merge
   [& maps]
