@@ -7,7 +7,8 @@
 
 (defprotocol TransactionStore
   (transactions-by-account-name [this account-name])
-  (put-transaction! [this transaction]))
+  (put-transaction! [this transaction])
+  (put-transactions! [this transactions]))
 
 (s/def ::state (s/and #(satisfies? AccountStore %)
                       #(satisfies? TransactionStore %)))

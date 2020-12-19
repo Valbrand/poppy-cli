@@ -1,6 +1,7 @@
 (ns budget.model.datascript.transaction
   (:require [budget.model.transaction :as model.transaction]
             [budget.model.datascript.money :as model.ds.money]
+            [budget.utils :as utils]
             [net.danielcompton.defn-spec-alpha :as ds]))
 
 (def schema
@@ -31,10 +32,16 @@
 
 (ds/defn ds->transaction :- ::model.transaction/transaction
   [ds-entity]
-  (let [{:transaction/keys [movements]} ds-entity]
-    {:transaction/movements (map ds->movement movements)}))
+  (let [{:transaction/keys [movements] :meta/keys [created-at description tags]} ds-entity]
+    (utils/assoc-if-some #:transaction {:movements (map ds->movement movements)}
+                         :meta/created-at created-at
+                         :meta/description description
+                         :meta/tags tags)))
 
 (ds/defn transaction->ds
   [transaction :- ::model.transaction/transaction]
-  (let [{:transaction/keys [movements]} transaction]
-    [{:transaction/movements (map movement->ds movements)}]))
+  (let [{:transaction/keys [movements] :meta/keys [created-at description tags]} transaction]
+    [(utils/assoc-if-some #:transaction {:movements (map movement->ds movements)}
+                          :meta/created-at created-at
+                          :meta/description description
+                          :meta/tags tags)]))

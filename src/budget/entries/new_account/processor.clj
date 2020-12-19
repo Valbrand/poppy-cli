@@ -4,6 +4,7 @@
             [budget.model.money :as model.money]
             [budget.model.transaction :as model.transaction]
             [budget.state.protocols :as state.protocols]
+            [budget.time :as time]
             [net.danielcompton.defn-spec-alpha :as ds]))
 
 (ds/defn entry->initial-transactions :- :account/transactions
@@ -14,25 +15,28 @@
         [(model.transaction/new-movement "equity/initial-balance"
                                          (model.money/money (- balance) currency))
          (model.transaction/new-movement name
-                                         (model.money/money balance currency))])])
+                                         (model.money/money balance currency))]
+        entry)])
     []))
 
 (ds/defn ^:private entry->model :- ::model.account/account
   [entry :- ::spec/new-account]
-  (model.account/new-account (:new-account/name entry)
-                             (entry->initial-transactions entry)))
+  {:account      (model.account/new-account (:new-account/name entry)
+                                            entry)
+   :transactions (entry->initial-transactions entry)})
 
 (ds/defn process-entry! :- ::state.protocols/state
   [state :- ::state.protocols/state
    entry :- ::spec/new-account]
-  (->> entry
-       entry->model
-       (state.protocols/put-account! state)))
+  (let [{:keys [account transactions]} (entry->model entry)]
+    (state.protocols/put-account! state account)
+    (state.protocols/put-transactions! state transactions)))
 
 (def config
   {:new-account {:entry-processor process-entry!}})
 
 (ds/defn initialize-state! :- ::state.protocols/state
   [state :- ::state.protocols/state]
-  (state.protocols/put-account! state 
-                               (model.account/new-account "equity/initial-balance" [])))
+  (state.protocols/put-account! state
+                                (model.account/new-account "equity/initial-balance"
+                                                           {:meta/created-at time/beginning-of-time})))

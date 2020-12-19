@@ -1,6 +1,6 @@
 (ns budget.model.datascript.account
   (:require [budget.model.account :as model.account]
-            [budget.model.datascript.transaction :as model.ds.transaction]
+            [budget.utils :as utils]
             [net.danielcompton.defn-spec-alpha :as ds]))
 
 (def schema
@@ -10,15 +10,14 @@
 
 (ds/defn ds->account :- ::model.account/account
   [ds-entity]
-  (let [{:account/keys [name transactions]} ds-entity]
-    {:account/name name
-     :account/transactions (map model.ds.transaction/ds->transaction transactions)}))
+  (let [{:account/keys [name] :meta/keys [created-at]} ds-entity]
+    (utils/assoc-if-some {:account/name name}
+                         :meta/created-at
+                         created-at)))
 
 (ds/defn account->ds
   [account :- ::model.account/account]
-  (let [{:account/keys [name transactions]} account]
-    (into
-     [{:account/name name}]
-     (flatten (map model.ds.transaction/transaction->ds transactions)))))
-
-(account->ds #:account{:name "a" :transactions [1]})
+  (let [{:account/keys [name] :meta/keys [created-at]} account]
+    [(utils/assoc-if-some {:account/name name}
+                          :meta/created-at
+                          created-at)]))

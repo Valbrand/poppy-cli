@@ -29,7 +29,8 @@
       state)))
 
 (comment
-  (def state (parse-input-file "input.budget"))
-  
+  (do (def state (parse-input-file "input.budget"))
+      state)
+
   (ex-message *e)
   (ex-data *e))

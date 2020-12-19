@@ -1,5 +1,6 @@
 (ns budget.model.transaction
-  (:require [budget.model.money :as model.money]
+  (:require [budget.model.meta]
+            [budget.model.money :as model.money]
             [clojure.spec.alpha :as s]
             [net.danielcompton.defn-spec-alpha :as ds]))
 
@@ -10,7 +11,8 @@
 
 (s/def :transaction/movements (s/coll-of ::movement :min-count 1))
 
-(s/def ::transaction (s/keys :req [:transaction/movements]))
+(s/def :transaction/meta (s/keys :opt [:meta/created-at :meta/description :meta/tags]))
+(s/def ::transaction (s/keys :req [:transaction/movements] :opt [:meta/created-at :meta/description :meta/tags]))
 
 (ds/defn new-movement :- ::movement
   [account :- :movement/account
@@ -18,6 +20,13 @@
   #:movement {:account account
               :value   value})
 
-(defn new-transaction
-  [movements]
-  #:transaction {:movements movements})
+(ds/defn new-transaction :- ::transaction
+  ([movements :- :transaction/movements]
+   (new-transaction movements {}))
+  ([movements :- :transaction/movements
+    meta-attrs :- :transaction/meta]
+   (let [{:meta/keys [created-at description tags]} meta-attrs]
+     #:transaction {:movements        movements
+                    :meta/created-at  created-at
+                    :meta/description description
+                    :meta/tags        tags})))

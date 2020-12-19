@@ -3,13 +3,19 @@
             [clojure.set :as set]
             [clojure.spec.alpha :as s]))
 
+(defn tap-reader
+  [x]
+  `(let [x-val# ~x]
+     (pp/pprint '~x)
+     (pp/pprint x-val#)
+     x-val#))
+
 (defmacro tap
   [x]
-  (let [x-raw (with-out-str (pp/pprint x))]
-    `(let [x-val# ~x]
-       (print ~x-raw)
-       (pp/pprint x-val#)
-       x-val#)))
+  `(let [x-val# ~x]
+     (pp/pprint '~x)
+     (pp/pprint x-val#)
+     x-val#))
 
 (defn- conflicting-keys
   [& maps]
@@ -59,3 +65,16 @@
   "`apply-macro` is not supposed to be used. This is merely a workaround made to generate entry specs from parsing configs"
   [macro args]
   `(apply (functionize-macro ~macro) ~args))
+
+(defn assoc-if-some
+  ([m k v]
+   (if (some? v)
+     (assoc m k v)
+     m))
+  ([m k v & kvs]
+   (assert (even? (count kvs)) "assoc-if-some got an odd number of arguments as the key-value pair list")
+   (->> kvs
+        (partition-all 2)
+        (reduce (fn [m [k v]]
+                  (assoc-if-some m k v))
+                (assoc-if-some m k v)))))

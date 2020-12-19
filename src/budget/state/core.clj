@@ -29,7 +29,6 @@
     (validate-initialization! this)
     (->> account
          model.ds.account/account->ds
-         utils/tap
          (db/transact! connection))
     this)
 
@@ -41,11 +40,18 @@
     [{:state/keys [connection] :as this} transaction]
     (validate-initialization! this)
     (->> transaction
-         utils/tap
          model.ds.transaction/transaction->ds
-         utils/tap
          (db/transact! connection))
-    this))
+    this)
+  (put-transactions!
+   [{:state/keys [connection] :as this} transactions]
+   (validate-initialization! this)
+   (db/transact! connection
+                 (->> transactions
+                      (map model.ds.transaction/transaction->ds)
+                      flatten
+                      (into [])))
+   this))
 
 (defn new-datascript-state
   ([schema] (new-datascript-state schema {}))

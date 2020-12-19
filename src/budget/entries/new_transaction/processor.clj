@@ -8,17 +8,17 @@
 
 (ds/defn ^:private entry->model :- ::model.transaction/transaction
   [entry :- ::spec/new-transaction]
-  (->> entry
-       :new-transaction/movements
-       (map (fn [{:new-movement/keys [account amount currency]}]
-              (model.transaction/new-movement account 
-                                              (model.money/money amount currency))))
-       model.transaction/new-transaction))
+  (let [model-movements (->> entry
+                             :new-transaction/movements
+                             (map (fn [{:new-movement/keys [account amount currency]}]
+                                    (model.transaction/new-movement account
+                                                                    (model.money/money amount currency)))))]
+    (model.transaction/new-transaction model-movements entry)))
 
 (ds/defn process-entry! :- ::state.protocols/state
   [state :- ::state.protocols/state
    entry :- ::spec/new-transaction]
-  (->> entry
+  (->> #tap entry
        entry->model
        (state.protocols/put-transaction! state)))
 
