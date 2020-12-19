@@ -4,14 +4,10 @@
             [net.danielcompton.defn-spec-alpha :as ds]))
 
 (def schema
-  {:movement/from         {:db/valueType   :db.type/ref
+  {:movement/account      {:db/valueType   :db.type/ref
                            :ref-attr       :account/name
                            :db/cardinality :db.cardinality/one
-                           :db/doc         "Account from which money is being moved"}
-   :movement/to           {:db/valueType   :db.type/ref
-                           :ref-attr       :account/name
-                           :db/cardinality :db.cardinality/one
-                           :db/doc         "Account to which money is being moved"}
+                           :db/doc         "Account being affected by the movement"}
    :movement/value        {:db/valueType   :db.type/ref
                            :db/cardinality :db.cardinality/one
                            :db/isComponent true

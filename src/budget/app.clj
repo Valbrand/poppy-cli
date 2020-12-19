@@ -29,15 +29,7 @@
       state)))
 
 (comment
-  (parse-input-file "input.budget")
-  
-  (def state *1)
-  
-  (datascript.core/datoms @(:state/connection state) :eavt)
-  
-  (class
-   (with-open [reader (java.io/reader "input.budget")]
-     (lines->entries (line-seq reader))))
+  (def state (parse-input-file "input.budget"))
   
   (ex-message *e)
   (ex-data *e))
