@@ -1,6 +1,6 @@
-(ns budget.v2.entries.new-transaction.spec
-  (:require [budget.v2.entries.core.spec :as entries.spec]
-            [budget.v2.model.money :as money]
+(ns budget.entries.new-transaction.spec
+  (:require [budget.entries.core.spec :as entries.spec]
+            [budget.model.money :as money]
             [clojure.spec.alpha :as s]))
 
 (s/def :new-movement/account ::entries.spec/account-name)

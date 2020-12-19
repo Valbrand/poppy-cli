@@ -1,6 +1,6 @@
-(ns budget.v2.entries.new-transaction.parser
-  (:require [budget.v2.parser.core :as parser]
-            [budget.v2.entries.new-transaction.spec :as spec]))
+(ns budget.entries.new-transaction.parser
+  (:require [budget.parser.core :as parser]
+            [budget.entries.new-transaction.spec :as spec]))
 
 (def header-grammar-rule "date <whitespace> <'tx'> <whitespace>? <':'> <whitespace> words (<whitespace> tags)?")
 (def header-transformer (parser/rules->map {:date  :meta/created-at

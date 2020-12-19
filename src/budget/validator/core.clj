@@ -1,6 +1,6 @@
-(ns budget.v2.validator.core
-  (:require [budget.v2.validator.report :as report]
-            [budget.v2.validator.spec :as spec]
+(ns budget.validator.core
+  (:require [budget.validator.report :as report]
+            [budget.validator.spec :as spec]
             [clojure.string :as str]
             [net.danielcompton.defn-spec-alpha :as ds]))
 
@@ -44,4 +44,4 @@
     (when (seq errors)
       (throw (validation-exception report)))
     
-    entry))
+    [entry-type entry]))

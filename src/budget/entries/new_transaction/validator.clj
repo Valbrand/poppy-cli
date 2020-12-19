@@ -1,9 +1,9 @@
-(ns budget.v2.entries.new-transaction.validator
-  (:require [budget.v2.entries.new-transaction.spec :as spec]
-            [budget.v2.model.money :as money]
-            [budget.v2.utils :as utils]
-            [budget.v2.validator.core :as validator]
-            [budget.v2.validator.spec :as validator.spec]
+(ns budget.entries.new-transaction.validator
+  (:require [budget.entries.new-transaction.spec :as spec]
+            [budget.model.money :as money]
+            [budget.utils :as utils]
+            [budget.validator.core :as validator]
+            [budget.validator.spec :as validator.spec]
             [clojure.spec.alpha :as s]
             [net.danielcompton.defn-spec-alpha :as ds]))
 

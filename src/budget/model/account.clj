@@ -1,5 +1,5 @@
-(ns budget.v2.model.account
-  (:require [budget.v2.model.money :as model.money]
+(ns budget.model.account
+  (:require [budget.model.money :as model.money]
             [clojure.spec.alpha :as s]
             [clojure.spec.gen.alpha :as gen]
             [clojure.string :as str]
@@ -33,7 +33,12 @@
    (s/conformer valid-account-name)
    (constantly account-name-generator)))
 
-(s/def :account/balance ::model.money/money)
-(s/def :account/transactions (s/coll-of :budget.v2.model.transaction/transaction))
+(s/def :account/transactions (s/coll-of :budget.model.transaction/transaction))
 
-(s/def ::account (s/keys :opt [:account/name :account/balance :account/transactions]))
+(s/def ::account (s/keys :opt [:account/name :account/transactions]))
+
+(ds/defn new-account :- ::account
+  [name :- :account/name
+   transactions :- :account/transactions]
+  #:account {:name         name
+             :transactions transactions})

@@ -1,9 +1,9 @@
-(ns budget.v2.state.core
-  (:require [budget.v2.state.protocols :as state.protocols]
-            [budget.v2.model.datascript.account :as model.ds.account]
-            [budget.v2.model.datascript.money :as model.ds.money]
-            [budget.v2.model.datascript.transaction :as model.ds.transaction]
-            [budget.v2.utils :as utils]
+(ns budget.state.core
+  (:require [budget.state.protocols :as state.protocols]
+            [budget.model.datascript.account :as model.ds.account]
+            [budget.model.datascript.money :as model.ds.money]
+            [budget.model.datascript.transaction :as model.ds.transaction]
+            [budget.utils :as utils]
             [datascript.core :as db]))
 
 (defprotocol IState
@@ -16,7 +16,7 @@
   (validate-initialization!
     [this]
     (when-not (:state/initialized? this)
-      (throw (ex-info "State should be created by calling new-state" {}))))
+      (throw (ex-info "State should be created by calling new-datascript-state" {}))))
 
   state.protocols/AccountStore
   (account-by-name
@@ -24,23 +24,28 @@
     (validate-initialization! this)
     (-> (db/entity @connection [:account/name account-name])
         model.ds.account/ds->account))
-  (put-account
+  (put-account!
     [{:state/keys [connection] :as this} account]
     (validate-initialization! this)
     (->> account
          model.ds.account/account->ds
-         (db/transact! connection)))
+         utils/tap
+         (db/transact! connection))
+    this)
 
   state.protocols/TransactionStore
   (transactions-by-account-name
     [{:state/keys [connection] :as this} account-name]
-    (validate-initialization! this)
-    (->> (db/entity @connection [:account/name account-name])
-         model.ds.account/ds-transactions
-         (map model.ds.transaction/ds->transaction)))
-  (put-transaction
+    (validate-initialization! this))
+  (put-transaction!
     [{:state/keys [connection] :as this} transaction]
-    (validate-initialization! this)))
+    (validate-initialization! this)
+    (->> transaction
+         utils/tap
+         model.ds.transaction/transaction->ds
+         utils/tap
+         (db/transact! connection))
+    this))
 
 (defn new-datascript-state
   ([schema] (new-datascript-state schema {}))
@@ -53,11 +58,14 @@
 (comment
   (do
     (require '[datascript.core :as d])
+    (require '[budget.model.datascript.core :as ds.core])
     
-    (def schema (utils/safe-merge model.ds.account/schema
-                                  model.ds.money/schema
-                                  model.ds.transaction/schema))
-    
-    (def state (new-datascript-state schema)))
+    (def state (new-datascript-state ds.core/schema)))
   
-  state)
+  (d/datoms @(:state/connection state) :eavt)
+  (d/transact! (:state/connection state) [#:account{:name "equity/initial-balance"}
+                                          #:account{:name "assets/nuconta"}
+                                          #:transaction{:movements
+                                                        [#:movement{:from [:account/name "equity/initial-balance"]
+                                                                    :to [:account/name "assets/nuconta"]
+                                                                    :value #:money{:value 100N, :currency :BRL}}]}]))

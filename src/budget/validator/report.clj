@@ -1,5 +1,5 @@
-(ns budget.v2.validator.report
-  (:require [budget.v2.validator.spec :as spec]
+(ns budget.validator.report
+  (:require [budget.validator.spec :as spec]
             [clojure.spec.alpha :as s]
             [clojure.string :as str]
             [net.danielcompton.defn-spec-alpha :as ds]))

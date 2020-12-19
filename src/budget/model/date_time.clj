@@ -1,4 +1,4 @@
-(ns budget.v2.model.date-time
+(ns budget.model.date-time
   (:require [clojure.spec.alpha :as s]
             [clj-time.format :as time.format]))
 

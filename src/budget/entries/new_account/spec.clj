@@ -1,7 +1,7 @@
-(ns budget.v2.entries.new-account.spec
-  (:require [budget.v2.entries.core.spec :as entries.spec]
-            [budget.v2.model.money :as money]
-            [budget.v2.utils :as utils]
+(ns budget.entries.new-account.spec
+  (:require [budget.entries.core.spec :as entries.spec]
+            [budget.model.money :as money]
+            [budget.utils :as utils]
             [clojure.spec.alpha :as s]))
 
 (s/def :new-account/name ::entries.spec/account-name)

@@ -1,6 +1,6 @@
-(ns budget.v2.entries.core.spec
-  (:require [budget.v2.model.date-time :as date-time]
-            [budget.v2.utils :as utils]
+(ns budget.entries.core.spec
+  (:require [budget.model.date-time :as date-time]
+            [budget.utils :as utils]
             [clojure.spec.alpha :as s]))
 
 (s/def ::account-name string?)

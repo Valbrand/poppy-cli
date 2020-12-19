@@ -1,6 +1,15 @@
-(ns budget.v2.utils
-  (:require [clojure.set :as set]
+(ns budget.utils
+  (:require [clojure.pprint :as pp]
+            [clojure.set :as set]
             [clojure.spec.alpha :as s]))
+
+(defmacro tap
+  [x]
+  (let [x-raw (with-out-str (pp/pprint x))]
+    `(let [x-val# ~x]
+       (print ~x-raw)
+       (pp/pprint x-val#)
+       x-val#)))
 
 (defn- conflicting-keys
   [& maps]

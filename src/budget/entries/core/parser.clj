@@ -1,9 +1,9 @@
-(ns budget.v2.entries.core.parser
-  (:require [budget.v2.parser.core :as parser]
-            [budget.v2.entries.core.spec :as entries.spec]
-            [budget.v2.entries.new-account.parser :as new-account.parser]
-            [budget.v2.entries.new-transaction.parser :as new-transaction.parser]
-            [budget.v2.utils :as utils]
+(ns budget.entries.core.parser
+  (:require [budget.parser.core :as parser]
+            [budget.entries.core.spec :as entries.spec]
+            [budget.entries.new-account.parser :as new-account.parser]
+            [budget.entries.new-transaction.parser :as new-transaction.parser]
+            [budget.utils :as utils]
             [clojure.spec.alpha :as s]))
 
 (def entry-parsing-config

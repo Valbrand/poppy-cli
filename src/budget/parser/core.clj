@@ -1,5 +1,5 @@
-(ns budget.v2.parser.core
-  (:require [budget.v2.model.date-time :as date-time]
+(ns budget.parser.core
+  (:require [budget.model.date-time :as date-time]
             [clojure.spec.alpha :as s]
             [clojure.string :as str]
             [instaparse.core :as insta]))

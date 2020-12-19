@@ -1,4 +1,4 @@
-(ns budget.v2.validator.spec
+(ns budget.validator.spec
   (:require [clojure.spec.alpha :as s]))
 
 (s/def ::message string?)
@@ -32,7 +32,7 @@
     (update val :entry s/unform spec)))
 
 (defmacro validation-report-spec
-  "Returns a spec that asserts that the value conforms to the :budget.v2.validator.core/base-validation-report spec and contains a key :entry which value conforms to the spec passed as the parameter.
+  "Returns a spec that asserts that the value conforms to the :budget.validator.core/base-validation-report spec and contains a key :entry which value conforms to the spec passed as the parameter.
    
    Example:
    (clojure.spec.alpha/valid? (validation-report-spec string?) {:errors [] :warnings [] :entry \"\"})"
