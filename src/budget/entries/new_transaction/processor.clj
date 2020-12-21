@@ -18,7 +18,7 @@
 (ds/defn process-entry! :- ::state.protocols/state
   [state :- ::state.protocols/state
    entry :- ::spec/new-transaction]
-  (->> #tap entry
+  (->> entry
        entry->model
        (state.protocols/put-transaction! state)))
 

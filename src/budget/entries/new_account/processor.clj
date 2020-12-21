@@ -5,9 +5,10 @@
             [budget.model.transaction :as model.transaction]
             [budget.state.protocols :as state.protocols]
             [budget.time :as time]
+            [clojure.spec.alpha :as s]
             [net.danielcompton.defn-spec-alpha :as ds]))
 
-(ds/defn entry->initial-transactions :- :account/transactions
+(ds/defn entry->initial-transactions :- (s/coll-of ::model.transaction/transaction)
   [entry :- ::spec/new-account]
   (if (contains? entry :new-account/balance)
     (let [{:new-account/keys [name balance currency]} entry]

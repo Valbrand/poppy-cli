@@ -24,6 +24,13 @@
     (validate-initialization! this)
     (-> (db/entity @connection [:account/name account-name])
         model.ds.account/ds->account))
+  (all-accounts
+    [{:state/keys [connection] :as this}]
+    (validate-initialization! this)
+    (->> (db/q '{:find [(pull ?account [*])]
+                 :where [[?account :account/name _]]}
+               @connection)
+         (map (comp model.ds.account/ds->account first))))
   (put-account!
     [{:state/keys [connection] :as this} account]
     (validate-initialization! this)
@@ -35,7 +42,14 @@
   state.protocols/TransactionStore
   (transactions-by-account-name
     [{:state/keys [connection] :as this} account-name]
-    (validate-initialization! this))
+    (validate-initialization! this)
+    (->> (db/q '{:find  [(pull ?transaction [* {:transaction/movements [* {:movement/account [:account/name]}]}])]
+                 :in    [$ ?account-name]
+                 :where [[?account :account/name ?account-name]
+                         [?movement :movement/account ?account]
+                         [?transaction :transaction/movements ?movement]]}
+               @connection account-name)
+         (map (comp model.ds.transaction/ds->transaction first))))
   (put-transaction!
     [{:state/keys [connection] :as this} transaction]
     (validate-initialization! this)
@@ -65,13 +79,23 @@
   (do
     (require '[datascript.core :as d])
     (require '[budget.model.datascript.core :as ds.core])
-    
-    (def state (new-datascript-state ds.core/schema)))
-  
-  (d/datoms @(:state/connection state) :eavt)
-  (d/transact! (:state/connection state) [#:account{:name "equity/initial-balance"}
-                                          #:account{:name "assets/nuconta"}
-                                          #:transaction{:movements
-                                                        [#:movement{:from [:account/name "equity/initial-balance"]
-                                                                    :to [:account/name "assets/nuconta"]
-                                                                    :value #:money{:value 100N, :currency :BRL}}]}]))
+
+    (def state (new-datascript-state ds.core/schema))
+
+    (d/transact! (:state/connection state) [#:account{:name "equity/initial-balance"}
+                                            #:account{:name "assets/nuconta"}
+                                            #:transaction{:movements
+                                                          [#:movement{:account [:account/name "equity/initial-balance"]
+                                                                      :value #:money{:value -100N, :currency :BRL}}
+                                                           #:movement{:account [:account/name "assets/nuconta"]
+                                                                      :value #:money{:value 100N, :currency :BRL}}]}]))
+
+  (db/q '{:find  [(pull ?account [* {:transaction/movements [* {:movement/account [:account/name]}]}])]
+          :in    [$ ?account-name]
+          :where [[?account :account/name ?account-name]]}
+        @(:state/connection state) "assets/nuconta")
+
+  (state.protocols/all-accounts state)
+  (state.protocols/transactions-by-account-name state "assets/nuconta")
+
+  (d/datoms @(:state/connection state) :eavt))
