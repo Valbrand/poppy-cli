@@ -6,13 +6,14 @@
 (defn money-conformer
   "Conformer for the :budget.model.money/value spec"
   [x]
-  (if (integer? x)
-    (bigint x)
-    ::s/invalid))
+  (try
+    (bigdec x)
+    (catch Exception _
+      ::s/invalid)))
 
 (s/def ::value (s/with-gen
                 (s/conformer money-conformer)
-                #(gen/fmap bigint (gen/int))))
+                #(gen/fmap bigdec (gen/double))))
 (s/def ::currency (s/with-gen keyword?
                               #(gen/fmap keyword 
                                          (gen/keyword))))

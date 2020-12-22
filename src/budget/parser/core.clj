@@ -81,6 +81,11 @@
    
    currency = word;
    
+   signed-number = positive-number | negative-number;
+   positive-number = <'+'>? number;
+   negative-number = <'-'> number;
+   number = #'\\d+(\\.\\d+)?';
+   
    signed-integer = positive-integer | negative-integer;
    positive-integer = <'+'>? integer;
    negative-integer = <'-'> integer;
@@ -108,6 +113,8 @@
 
 (def transform-integer bigint)
 
+(def transform-number bigdec)
+
 (def base-transform-map
   (create-transform-map {:words            str
                          :date             date-time/str->date
@@ -117,6 +124,10 @@
                          :positive-integer transform-unwrap
                          :negative-integer (comp - transform-unwrap)
                          :signed-integer   transform-unwrap
+                         :positive-number  transform-unwrap
+                         :negative-number  (comp - transform-unwrap)
+                         :signed-number    transform-unwrap
+                         :number           transform-number
                          :currency         keyword
                          :account-name     transform-account-name}))
 
