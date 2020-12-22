@@ -2,8 +2,7 @@
   (:require [budget.model.account :as model.account]
             [budget.model.money :as model.money]
             [budget.model.transaction :as model.transaction]
-            [budget.state.protocols :as state.protocols]
-            [budget.utils :as utils]
+            [budget.reporter.common :refer [indent println']]
             [clojure.spec.alpha :as s]
             [clojure.string :as str]
             [net.danielcompton.defn-spec-alpha :as ds]))
@@ -47,7 +46,7 @@
   (-> account-name (str/split #"/") first))
 
 (def account-presentation-order
-  (->> ["equity" "assets"]
+  (->> ["equity" "assets" "liabilities"]
        (map-indexed #(vector %2 %1))
        (into {})))
 
@@ -64,3 +63,27 @@
        (map (fn [[account-type reports]]
               [account-type (into {} (sort-by first reports))]))
        (into {})))
+
+(ds/defn present!
+  [report :- ::report]
+  (letfn [(present-accounts! [accounts]
+            (doseq [[account-name balances] accounts]
+              (println' account-name)
+              (indent 2
+                (present-balances! balances))))
+          (present-balances! [balances]
+            (doseq [{:keys [value currency]} balances]
+              (println' (format "%s %s" value currency))))]
+    (println' "Account balances:")
+    (indent 2
+      (doseq [[account-type accounts] (->> report
+                                           (sort-by (comp account-presentation-order first))
+                                           (map (juxt first (comp (partial sort-by first) second))))]
+        (println' (str/upper-case account-type))
+        (indent 2
+          (present-accounts! accounts))))))
+
+(comment
+  (present! {"assets" {"assets/nuconta" [{:value 100N, :currency :BRL}]
+                       "assets/aaa" [{:value 100N, :currency :BRL}]}
+             "equity" {"equity/initial-balance" [{:value -100N, :currency :BRL}]}}))

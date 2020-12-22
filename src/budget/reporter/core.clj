@@ -18,4 +18,11 @@
     (fnk [all-accounts transactions-for-account]
       (reporter.account-balances/report all-accounts transactions-for-account))}))
 
-(comment)
+(def ^:private presenters
+  {:account-balances reporter.account-balances/present!})
+
+(defn present!
+  [report-type report]
+  (let [present-report! (get presenters report-type)]
+    (assert (some? present-report!) (format "Presenter not found for type %s" report-type))
+    (present-report! report)))
