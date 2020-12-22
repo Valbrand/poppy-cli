@@ -21,8 +21,7 @@
 (s/def ::money (s/keys :req-un [::value ::currency]))
 
 (def add +)
-(def zero-value? clojure.core/zero?)
-(def zero? (comp zero-value? :value))
+(def zero-value? (comp clojure.core/zero? :value))
 
 (ds/defn money :- ::money
   [value :- ::value
