@@ -28,7 +28,7 @@
                      entries.processor/initialize-state!
                      (assimilate-entries! entries))
           reports-generator (reporter/reports-graph {:state state})
-          default-report-types [:account-balances :current-net-worth]
+          default-report-types [:account-balances :current-net-worth :budget-allocation]
           reports (map (juxt identity (partial get reports-generator)) default-report-types)]
       (doseq [[report-type report] reports]
         (reporter/present! report-type report)
@@ -38,6 +38,7 @@
 
 (comment
   (do (parse-input-file "input.budget") nil)
+  (:reports (parse-input-file "input.budget"))
 
   (ex-message *e)
   (ex-data *e))

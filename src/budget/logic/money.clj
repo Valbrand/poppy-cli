@@ -16,3 +16,10 @@
   [money :- ::model.money/money]
   (let [{:keys [value currency]} money]
     (format "%.02f %s" value (name currency))))
+
+(def zero-value? (comp zero? :value))
+(def negative-value? (comp neg? :value))
+(def positive-value? (comp pos? :value))
+(ds/defn abs-value
+  [value :- ::model.money/money]
+  (update value :value #(.abs ^BigDecimal %)))

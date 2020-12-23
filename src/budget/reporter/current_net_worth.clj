@@ -2,7 +2,7 @@
   (:require [budget.logic.money :as logic.money]
             [budget.model.money :as model.money]
             [budget.reporter.account-balances :as reporter.account-balances]
-            [budget.reporter.common :refer [println' indent]]
+            [budget.reporter.common :as reporter.common :refer [println' indent]]
             [clojure.spec.alpha :as s]
             [net.danielcompton.defn-spec-alpha :as ds]))
 
@@ -18,13 +18,9 @@
 
 (ds/defn present!
   [report :- ::report]
-  (let [formatted-balances (map logic.money/money->string report)
-        max-length (count (apply max-key count formatted-balances))
-        balance-format-string (str "%" max-length "s")]
-    (println' "Net worth:")
-    (indent 2
-      (doseq [balance formatted-balances]
-        (println' (format balance-format-string balance))))))
+  (println' "Net worth:")
+  (indent 2
+    (reporter.common/print-monetary-values report)))
 
 (comment
   (present! (report {"assets" {"assets/nuconta" [{:value 500M :currency :BRL}]

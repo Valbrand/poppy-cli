@@ -13,7 +13,7 @@
   [movements :- (s/coll-of ::spec/movement)]
   (->> movements
        (map :new-movement/amount)
-       (reduce money/add money/ZERO)))
+       (reduce + money/ZERO)))
 
 (ds/defn ^:private outstanding-currency-change-error :- ::validator.spec/error
   [currency :- :movement/currency
