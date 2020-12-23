@@ -1,5 +1,7 @@
 (ns budget.reporter.account-balances
-  (:require [budget.model.account :as model.account]
+  (:require [budget.logic.account :as logic.account]
+            [budget.logic.money :as logic.money]
+            [budget.model.account :as model.account]
             [budget.model.money :as model.money]
             [budget.model.transaction :as model.transaction]
             [budget.reporter.common :refer [indent println']]
@@ -17,20 +19,11 @@
        :transaction/movements
        (filter #(= account-name (:movement/account %)))))
 
-(ds/defn aggregate-monetary-values :- (s/coll-of ::model.money/money)
-  [values :- (s/coll-of ::model.money/money)]
-  (->> values
-       (group-by :currency)
-       vals
-       (map #(reduce (fn [result {:keys [value]}]
-                       (update result :value + value))
-                     %))))
-
 (ds/defn aggregate-movements-value :- (s/coll-of ::model.money/money)
   [movements :- (s/coll-of ::model.transaction/movement)]
   (->> movements
        (map :movement/value)
-       aggregate-monetary-values))
+       logic.money/aggregate-monetary-values))
 
 (ds/defn transactions->balance-total :- (s/coll-of ::model.money/money)
   [account-name :- :account/name
@@ -39,14 +32,10 @@
        (map (partial movements-for-account account-name))
        (map aggregate-movements-value)
        flatten
-       aggregate-monetary-values))
-
-(defn account-type
-  [account-name]
-  (-> account-name (str/split #"/") first))
+       logic.money/aggregate-monetary-values))
 
 (def account-presentation-order
-  (->> ["equity" "assets" "liabilities"]
+  (->> ["assets" "liabilities"]
        (map-indexed #(vector %2 %1))
        (into {})))
 
@@ -59,7 +48,7 @@
               [name (->> name
                          transactions-for-account
                          (transactions->balance-total name))]))
-       (group-by (comp account-type first))
+       (group-by (comp logic.account/account-name->account-type first))
        (map (fn [[account-type reports]]
               [account-type (into {} (sort-by first reports))]))
        (into {})))
@@ -72,11 +61,12 @@
               (indent 2
                 (present-balances! balances))))
           (present-balances! [balances]
-            (doseq [{:keys [value currency]} balances]
-              (println' (format "%s %s" value currency))))]
+            (doseq [balance balances]
+              (println' (logic.money/money->string balance))))]
     (println' "Account balances:")
     (indent 2
       (doseq [[account-type accounts] (->> report
+                                           (filter #(contains? account-presentation-order (first %)))
                                            (sort-by (comp account-presentation-order first))
                                            (map (juxt first (comp (partial sort-by first) second))))]
         (println' (str/upper-case account-type))
@@ -84,6 +74,6 @@
           (present-accounts! accounts))))))
 
 (comment
-  (present! {"assets" {"assets/nuconta" [{:value 100N, :currency :BRL}]
-                       "assets/aaa" [{:value 100N, :currency :BRL}]}
-             "equity" {"equity/initial-balance" [{:value -100N, :currency :BRL}]}}))
+  (present! {"assets" {"assets/nuconta" [{:value 100M, :currency :BRL}]
+                       "assets/aaa" [{:value 100M, :currency :BRL}]}
+             "equity" {"equity/initial-balance" [{:value -100M, :currency :BRL}]}}))

@@ -1,5 +1,6 @@
 (ns budget.reporter.core
   (:require [budget.reporter.account-balances :as reporter.account-balances]
+            [budget.reporter.current-net-worth :as reporter.current-net-worth]
             [budget.state.protocols :as state.protocols]
             [plumbing.core :refer [fnk]]
             [plumbing.graph :as graph]))
@@ -16,10 +17,15 @@
 
     :account-balances
     (fnk [all-accounts transactions-for-account]
-      (reporter.account-balances/report all-accounts transactions-for-account))}))
+      (reporter.account-balances/report all-accounts transactions-for-account))
+    
+    :current-net-worth
+    (fnk [account-balances]
+      (reporter.current-net-worth/report account-balances))}))
 
 (def ^:private presenters
-  {:account-balances reporter.account-balances/present!})
+  {:account-balances  reporter.account-balances/present!
+   :current-net-worth reporter.current-net-worth/present!})
 
 (defn present!
   [report-type report]
