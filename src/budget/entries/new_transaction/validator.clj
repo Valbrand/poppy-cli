@@ -25,7 +25,7 @@
 (ds/defn ^:private outstanding-currency-change :- ::validator.spec/error
   [input :- (s/tuple :movement/currency :new-movement/amount)]
   (let [[currency value] input]
-    (when-not (money/zero-value? value)
+    (when-not (zero? value)
       (outstanding-currency-change-error currency value))))
 
 (ds/defn ^:private validate-movements! :- ::validation-report
