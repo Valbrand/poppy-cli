@@ -23,7 +23,7 @@
 (ds/defn ^:private validation-exception
   [report :- ::spec/base-validation-report]
   (ex-info (str/join "\n" (into ["Errors found validating entry:"
-                                 (str (:entry report))]
+                                 (report/pretty-print-str (:entry report))]
                                 (->> (:errors report)
                                      (map report/validation-issue-log-lines)
                                      flatten
