@@ -2,6 +2,7 @@
   (:require [budget.validator.spec :as spec]
             [clojure.spec.alpha :as s]
             [clojure.string :as str]
+            [clojure.pprint :as pp]
             [net.danielcompton.defn-spec-alpha :as ds]))
 
 (ds/defn indent :- string?
@@ -16,10 +17,14 @@
         (->> (:details issue)
              (map (comp (partial indent 2) (partial str/join " "))))))
 
+(ds/defn pretty-print-str :- string?
+  [x :- any?]
+  (with-out-str (pp/pprint x)))
+
 (ds/defn present-validation-warnings!
   [report :- ::spec/base-validation-report]
   (doseq [log-line (into ["Warnings for entry:"
-                          (str (:entry report))]
+                          (pretty-print-str (:entry report))]
                          (->> (:warnings report)
                               (map validation-issue-log-lines)
                               flatten

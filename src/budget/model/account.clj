@@ -12,6 +12,7 @@
                            "equity"
                            "budget"
                            "goal"})
+(s/def ::account-type valid-account-types)
 
 (ds/defn valid-account-name
   [name :- string?]

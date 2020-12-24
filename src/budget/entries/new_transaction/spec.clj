@@ -1,15 +1,13 @@
 (ns budget.entries.new-transaction.spec
   (:require [budget.entries.core.spec :as entries.spec]
-            [budget.model.money :as money]
+            [budget.model.money :as model.money]
             [clojure.spec.alpha :as s]))
 
 (s/def :new-movement/account ::entries.spec/account-name)
-(s/def :new-movement/amount ::money/value)
-(s/def :new-movement/currency ::entries.spec/currency)
+(s/def :new-movement/value ::model.money/money)
 
 (s/def ::movement (s/keys :req [:new-movement/account
-                                :new-movement/amount
-                                :new-movement/currency]))
+                                :new-movement/value]))
 
 (s/def :new-transaction/movements (s/coll-of ::movement :min-count 2))
 

@@ -6,22 +6,23 @@
 (defn money-conformer
   "Conformer for the :budget.model.money/value spec"
   [x]
-  (if (integer? x)
-    (bigint x)
-    ::s/invalid))
+  (try
+    (bigdec x)
+    (catch Exception _
+      ::s/invalid)))
 
+(defn- finite?
+  [n]
+  (Double/isFinite n))
 (s/def ::value (s/with-gen
                 (s/conformer money-conformer)
-                #(gen/fmap bigint (gen/int))))
+                #(gen/fmap bigdec
+                           (gen/such-that finite? (gen/double)))))
 (s/def ::currency (s/with-gen keyword?
                               #(gen/fmap keyword 
                                          (gen/keyword))))
 
 (s/def ::money (s/keys :req-un [::value ::currency]))
-
-(def add +)
-(def zero-value? clojure.core/zero?)
-(def zero? (comp zero-value? :value))
 
 (ds/defn money :- ::money
   [value :- ::value
@@ -30,3 +31,10 @@
    :currency currency})
 
 (def ZERO (s/conform ::value 0))
+
+(comment
+  (clojure.test.check.generators/such-that)
+  (Double/isFinite ##NaN)
+  (Double/isFinite ##Inf)
+  (clojure.test.check.generators/sample (gen/double))
+  (clojure.test.check.generators/sample (s/gen ::money)))

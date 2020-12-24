@@ -3,6 +3,7 @@
             [budget.entries.core.processor :as entries.processor]
             [budget.entries.core.validator :as entries.validator]
             [budget.model.datascript.core :as model.ds]
+            [budget.reporter.core :as reporter]
             [budget.state.core :as state]
             [clojure.java.io :as java.io]))
 
@@ -25,12 +26,24 @@
     (let [entries (-> reader line-seq lines->entries)
           state (->> (state/new-datascript-state model.ds/schema)
                      entries.processor/initialize-state!
-                     (assimilate-entries! entries))]
-      state)))
+                     (assimilate-entries! entries))
+          reports-generator (reporter/reports-graph {:state state})
+          default-report-types [:account-balances :current-net-worth :budget-allocation]
+          reports (map (juxt identity (partial get reports-generator)) default-report-types)]
+      (doseq [[report-type report] reports]
+        (reporter/present! report-type report)
+        (println "=========="))
+      {:state state
+       :reports reports})))
 
 (comment
-  (do (def state (parse-input-file "input.budget"))
-      state)
+  (do (parse-input-file "input.budget") nil)
+  (:reports (parse-input-file "input.budget"))
+
+  (try
+    (parse-input-file "input.budget")
+    (catch Exception e
+      (clojure.stacktrace/print-stack-trace e)))
 
   (ex-message *e)
   (ex-data *e))
