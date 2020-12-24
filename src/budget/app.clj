@@ -39,6 +39,13 @@
 (comment
   (do (parse-input-file "input.budget") nil)
   (:reports (parse-input-file "input.budget"))
+  
+  (try
+    (parse-input-file "input.budget")
+    (catch Exception e
+      (clojure.stacktrace/print-stack-trace e)))
+  
+  (clojure.repl/apropos "stack")
 
   (ex-message *e)
   (ex-data *e))

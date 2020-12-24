@@ -1,6 +1,5 @@
 (ns budget.entries.new-transaction.processor
   (:require [budget.entries.new-transaction.spec :as spec]
-            [budget.model.money :as model.money]
             [budget.model.transaction :as model.transaction]
             [budget.state.protocols :as state.protocols]
             [budget.utils :as utils]
@@ -10,9 +9,8 @@
   [entry :- ::spec/new-transaction]
   (let [model-movements (->> entry
                              :new-transaction/movements
-                             (map (fn [{:new-movement/keys [account amount currency]}]
-                                    (model.transaction/new-movement account
-                                                                    (model.money/money amount currency)))))]
+                             (map (fn [{:new-movement/keys [account value]}]
+                                    (model.transaction/new-movement account value))))]
     (model.transaction/new-transaction model-movements entry)))
 
 (ds/defn process-entry! :- ::state.protocols/state
