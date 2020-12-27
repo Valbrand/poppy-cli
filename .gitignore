@@ -4,3 +4,4 @@ input.budget
 .cpcache/
 .nrepl-port
 .clj-kondo/.cache/
+classes/
