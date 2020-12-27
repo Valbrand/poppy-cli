@@ -12,6 +12,11 @@
 (s/def ::balances (s/coll-of ::model.money/money))
 (s/def ::report (s/map-of :account/name ::balances))
 
+(s/def ::account-types (s/coll-of ::model.account/account-type))
+(s/def ::report-title string?)
+(s/def ::omit-empty-accounts? boolean?)
+(s/def ::report-options (s/keys :req-un [::account-types] :opt-un [::report-title ::omit-empty-accounts?]))
+
 (ds/defn movements-for-account :- (s/coll-of ::model.transaction/movement)
   [account-name :- :account/name
    transaction :- ::model.transaction/transaction]
@@ -34,11 +39,6 @@
        flatten
        logic.money/aggregate-monetary-values))
 
-(def account-presentation-order
-  (->> ["assets" "liabilities"]
-       (map-indexed #(vector %2 %1))
-       (into {})))
-
 (ds/defn report :- ::report
   [accounts :- (s/coll-of ::model.account/account)
    transactions-for-account :- (s/fspec :args (s/cat :account-name :account/name)
@@ -54,24 +54,34 @@
        (into {})))
 
 (ds/defn present!
-  [report :- ::report]
-  (letfn [(present-accounts! [accounts]
-            (doseq [[account-name balances] accounts]
-              (println' account-name)
-              (indent 2
-                (present-balances! balances))))
-          (present-balances! [balances]
-            (doseq [balance balances]
-              (println' (logic.money/money->string balance))))]
-    (println' "Account balances:")
-    (indent 2
-      (doseq [[account-type accounts] (->> report
-                                           (filter #(contains? account-presentation-order (first %)))
-                                           (sort-by (comp account-presentation-order first))
-                                           (map (juxt first (comp (partial sort-by first) second))))]
-        (println' (str/upper-case account-type))
-        (indent 2
-          (present-accounts! accounts))))))
+  ([report :- ::report]
+   (present! {:account-types model.account/valid-account-types} report))
+  ([options :- ::report-options
+    report :- ::report]
+   (let [{:keys [account-types report-title omit-empty-accounts?] :or {report-title         "Account balances"
+                                                                       omit-empty-accounts? false}} options
+         account-presentation-order (->> account-types
+                                         (map-indexed #(vector %2 %1))
+                                         (into {}))]
+     (letfn [(present-accounts! [accounts]
+               (doseq [[account-name balances] (remove #(and omit-empty-accounts?
+                                                             (every? logic.money/zero-value? (second %)))
+                                                       accounts)]
+                 (println' account-name)
+                 (indent 2
+                   (present-balances! balances))))
+             (present-balances! [balances]
+               (doseq [balance balances]
+                 (println' (logic.money/money->string balance))))]
+       (println' (format "%s:" report-title))
+       (indent 2
+         (doseq [[account-type accounts] (->> report
+                                              (filter #(contains? account-presentation-order (first %)))
+                                              (sort-by (comp account-presentation-order first))
+                                              (map (juxt first (comp (partial sort-by first) second))))]
+           (println' (str/upper-case account-type))
+           (indent 2
+             (present-accounts! accounts))))))))
 
 (comment
   (present! {"assets" {"assets/nuconta" [{:value 100M, :currency :BRL}]

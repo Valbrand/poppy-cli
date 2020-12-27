@@ -27,7 +27,7 @@
 (ds/defn ^:private validate-zero-sum :- ::validation-report
   [validation-report :- ::validation-report]
   (let [value-deltas (->> (get-in validation-report [:entry :new-transaction/movements])
-                          (movements-for-account-types #{"assets" "liabilities" "equity" "incomes"})
+                          (movements-for-account-types #{"assets" "liabilities" "equity" "incomes" "expenses"})
                           (map :new-movement/value)
                           logic.money/aggregate-monetary-values)]
     (reduce (fn [report {:keys [value currency]}]

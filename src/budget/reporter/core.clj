@@ -20,18 +20,30 @@
     (fnk [all-accounts transactions-for-account]
       (reporter.account-balances/report all-accounts transactions-for-account))
 
+    :assets-liabilities-balances
+    (fnk [account-balances]
+      account-balances)
+
+    :budget-goal-balances
+    (fnk [account-balances]
+      account-balances)
+
     :current-net-worth
     (fnk [account-balances]
       (reporter.current-net-worth/report account-balances))
 
     :budget-allocation
-    (fnk [account-balances]
-      (reporter.budget-allocation/report account-balances))}))
+    (fnk [account-balances current-net-worth]
+      (reporter.budget-allocation/report account-balances current-net-worth))}))
 
 (def ^:private presenters
-  {:account-balances  reporter.account-balances/present!
-   :current-net-worth reporter.current-net-worth/present!
-   :budget-allocation reporter.budget-allocation/present!})
+  {:account-balances            reporter.account-balances/present!
+   :assets-liabilities-balances (partial reporter.account-balances/present! {:account-types ["assets" "liabilities"]})
+   :budget-goal-balances        (partial reporter.account-balances/present! {:account-types        ["budget" "goal"]
+                                                                             :report-title         "Budget allocations"
+                                                                             :omit-empty-accounts? true})
+   :current-net-worth           reporter.current-net-worth/present!
+   :budget-allocation           reporter.budget-allocation/present!})
 
 (defn present!
   [report-type report]

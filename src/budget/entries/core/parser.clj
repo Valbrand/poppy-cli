@@ -28,7 +28,10 @@
    (let [[current-line & rest] lines]
      (cond
        (nil? current-line)
-       (cons (parse-entry consumed-lines) nil)
+       (some-> consumed-lines
+               seq
+               parse-entry
+               (cons nil))
 
        (entry-separator? current-line)
        (if (seq consumed-lines)

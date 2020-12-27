@@ -6,6 +6,7 @@
             [budget.model.transaction :as model.transaction]
             [budget.reporter.account-balances :as reporter.account-balances]
             [budget.reporter.common :as reporter.common :refer [indent println']]
+            [budget.reporter.current-net-worth :as reporter.current-net-worth]
             [clojure.spec.alpha :as s]
             [net.danielcompton.defn-spec-alpha :as ds]))
 
@@ -22,12 +23,17 @@
        logic.money/aggregate-monetary-values))
 
 (ds/defn report :- ::report
-  [account-balances :- ::reporter.account-balances/report]
-  (let [balances (balances-report->balances account-balances ["equity" "incomes" "budget" "goal"])
-        not-allocated (->> balances
+  [account-balances :- ::reporter.account-balances/report
+   current-net-worth :- ::reporter.current-net-worth/report]
+  (let [negated-net-worth (map #(update % :value -) current-net-worth)
+        allocations (balances-report->balances account-balances ["budget" "goal"])
+        allocation-deltas (->> [negated-net-worth allocations]
+                               flatten
+                               logic.money/aggregate-monetary-values)
+        not-allocated (->> allocation-deltas
                            (filter logic.money/negative-value?)
                            (map logic.money/abs-value))
-        overbudgeted (->> balances
+        overbudgeted (->> allocation-deltas
                           (filter logic.money/positive-value?)
                           (map logic.money/abs-value))]
     (into {}

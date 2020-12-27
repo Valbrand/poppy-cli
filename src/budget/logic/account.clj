@@ -10,3 +10,7 @@
 (ds/defn account->account-type :- ::model.account/account-type
   [account :- ::model.account/account]
   (-> account :account/name account-name->account-type))
+
+(ds/defn account-name->identifier :- string?
+  [account-name :- :account/name]
+  (str/replace account-name #"^.+?/" ""))
