@@ -44,7 +44,8 @@
                     (filter (comp (partial processable-entry? (model.date-time/today)) second))
 
                     :always
-                    (sort-by (comp :meta/created-at second)))
+                    (sort-by (juxt (comp :meta/created-at second)
+                                   entries.processor/entry-processing-order)))
           state (->> (state/new-datascript-state model.ds/schema)
                      entries.processor/initialize-state!
                      (assimilate-entries! entries))
