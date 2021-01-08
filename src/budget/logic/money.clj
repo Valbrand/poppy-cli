@@ -15,7 +15,7 @@
 (ds/defn money->string :- string?
   [money :- ::model.money/money]
   (let [{:keys [value currency]} money]
-    (format "%.02f %s" value (name currency))))
+    (format "%s %s" value (name currency))))
 
 (def zero-value? (comp zero? :value))
 (def negative-value? (comp neg? :value))

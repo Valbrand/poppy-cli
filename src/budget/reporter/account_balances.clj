@@ -4,7 +4,7 @@
             [budget.model.account :as model.account]
             [budget.model.money :as model.money]
             [budget.model.transaction :as model.transaction]
-            [budget.reporter.common :refer [indent println']]
+            [budget.reporter.common :refer [indent println' print-monetary-values]]
             [clojure.spec.alpha :as s]
             [clojure.string :as str]
             [net.danielcompton.defn-spec-alpha :as ds]))
@@ -69,10 +69,7 @@
                                                        accounts)]
                  (println' account-name)
                  (indent 2
-                   (present-balances! balances))))
-             (present-balances! [balances]
-               (doseq [balance balances]
-                 (println' (logic.money/money->string balance))))]
+                   (print-monetary-values balances))))]
        (println' (format "%s:" report-title))
        (indent 2
          (doseq [[account-type accounts] (->> report

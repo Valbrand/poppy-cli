@@ -71,7 +71,7 @@
    <whitespace> = #'\\h+';
    
    words = word (whitespace word)*;
-   <word> = #'(\\w|\\p{L}|-)+';
+   <word> = #'(\\w|\\p{L}|-|&)+';
    
    tags = tag (<whitespace> tag)*;
    tag = <'#'> word ('/' word)*;

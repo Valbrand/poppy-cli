@@ -19,8 +19,11 @@
 
 (ds/defn print-monetary-values
   [values :- (s/coll-of ::model.money/money)]
-  (let [formatted-values (map logic.money/money->string values)
-        max-length (count (apply max-key count formatted-values))
-        format-string (str "%" max-length "s")]
-    (doseq [value formatted-values]
-      (println' (format format-string value)))))
+  (when-let [formatted-values (->> values
+                                   (remove logic.money/zero-value?)
+                                   (map logic.money/money->string)
+                                   seq)]
+    (let [max-length (count (apply max-key count formatted-values))
+          format-string (str "%" max-length "s")]
+      (doseq [value formatted-values]
+        (println' (format format-string value))))))
