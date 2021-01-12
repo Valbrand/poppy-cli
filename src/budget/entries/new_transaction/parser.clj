@@ -2,13 +2,13 @@
   (:require [budget.parser.core :as parser]
             [budget.entries.new-transaction.spec :as spec]))
 
-(def header-grammar-rule "date <whitespace> <'tx'> <whitespace>? <':'> <whitespace> words (<whitespace> tags)?")
+(def header-grammar-rule "date <whitespace> <'tx'> <whitespace>? <':'> <whitespace> words (<whitespace> tags)? (<whitespace> <comment>)?")
 (def header-transformer (parser/rules->map {:date  :meta/created-at
                                             :words :meta/description
                                             :tags  :meta/tags}))
 
 (parser/defparser body-parser
-  {:movement {:rule        "account-name <whitespace> signed-number <whitespace> currency"
+  {:movement {:rule        "account-name <whitespace> signed-number <whitespace> currency (<whitespace> <comment>)?"
               :transformer (parser/rules->map {:account-name  :new-movement/account
                                                :signed-number :new-movement/amount
                                                :currency      :new-movement/currency})}})

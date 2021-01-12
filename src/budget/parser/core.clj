@@ -67,25 +67,27 @@
 
 (def base-grammar-rules
   "date = #'\\d{4}/\\d{2}/\\d{2}';
-   
+
+   <comment> = #'//.+$'
+
    <whitespace> = #'\\h+';
-   
+
    words = word (whitespace word)*;
    <word> = #'(\\w|\\p{L}|-|&)+';
-   
+
    tags = tag (<whitespace> tag)*;
    tag = <'#'> word ('/' word)*;
-   
+
    account-name = account-type (<'/'> word)+;
    <account-type> = 'assets' | 'liabilities' | 'expenses' | 'incomes' | 'equity' | 'budget' | 'goal';
-   
+
    currency = word;
-   
+
    signed-number = positive-number | negative-number;
    positive-number = <'+'>? number;
    negative-number = <'-'> number;
    number = #'\\d+(\\.\\d+)?';
-   
+
    signed-integer = positive-integer | negative-integer;
    positive-integer = <'+'>? integer;
    negative-integer = <'-'> integer;

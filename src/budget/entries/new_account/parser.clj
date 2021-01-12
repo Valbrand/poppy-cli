@@ -2,7 +2,7 @@
   (:require [budget.parser.core :as parser]
             [budget.entries.new-account.spec :as spec]))
 
-(def header-grammar-rule "date <whitespace> <'new-account'> <whitespace>? <':'> <whitespace> account-name <whitespace> signed-number <whitespace> currency")
+(def header-grammar-rule "date <whitespace> <'new-account'> <whitespace>? <':'> <whitespace> account-name <whitespace> signed-number <whitespace> currency (<whitespace> <comment>)?")
 (def header-transformer (parser/rules->map {:date          :meta/created-at
                                             :account-name  :new-account/name
                                             :signed-number :new-account/balance
