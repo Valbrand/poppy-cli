@@ -45,9 +45,8 @@
   [state :- ::state.protocols/state
    entry :- ::spec/new-account]
   (let [{:keys [accounts transactions]} (entry->model entry)]
-    (doseq [account accounts]
-      (state.protocols/put-account! state account))
-    (state.protocols/put-transactions! state transactions)))
+    (-> (reduce #(state.protocols/put-account! %1 %2) state accounts)
+        (state.protocols/put-transactions! transactions))))
 
 (def config
   {:new-account {:entry-processor process-entry!}})

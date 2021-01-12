@@ -15,5 +15,4 @@
    entry-type
    entry]
   (let [entry-processor (get-processor! config entry-type)]
-    (entry-processor state entry)
-    state))
+    (entry-processor state entry)))

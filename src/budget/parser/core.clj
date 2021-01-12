@@ -1,5 +1,6 @@
 (ns budget.parser.core
   (:require [budget.model.date-time :as date-time]
+            [budget.model.money :as model.money]
             [clojure.spec.alpha :as s]
             [clojure.string :as str]
             [instaparse.core :as insta]))
@@ -88,20 +89,12 @@
    negative-number = <'-'> number;
    number = #'\\d+(\\.\\d+)?';
 
+   monetary-value = signed-number <whitespace> currency;
+
    signed-integer = positive-integer | negative-integer;
    positive-integer = <'+'>? integer;
    negative-integer = <'-'> integer;
    integer = #'\\d+';")
-
-(defn transform-signed-integer
-  ([[_ value]] value)
-  ([[_ signal] [_ value]] (signal value)))
-
-(defn transform-signal
-  [signal]
-  (case signal
-    "+" +
-    "-" -))
 
 (defn transform-account-name
   [& args]
@@ -117,6 +110,10 @@
 
 (def transform-number bigdec)
 
+(defn transform-monetary-value
+  [[_ value] [_ currency]]
+  (model.money/money value currency))
+
 (def base-transform-map
   (create-transform-map {:date             date-time/str->date
                          :tag              str
@@ -130,7 +127,8 @@
                          :signed-number    transform-unwrap
                          :number           transform-number
                          :currency         keyword
-                         :account-name     transform-account-name}))
+                         :account-name     transform-account-name
+                         :monetary-value   transform-monetary-value}))
 
 (defn transform-map-with-base
   [custom-transform-map]

@@ -3,13 +3,15 @@
             [budget.entries.core.spec :as entries.spec]
             [budget.entries.new-account.parser :as new-account.parser]
             [budget.entries.new-transaction.parser :as new-transaction.parser]
+            [budget.entries.set-exchange-rate.parser :as set-exchange-rate.parser]
             [budget.utils :as utils]
             [clojure.spec.alpha :as s]))
 
 (def entry-parsing-config
   (utils/safe-merge
    new-account.parser/parsing-config
-   new-transaction.parser/parsing-config))
+   new-transaction.parser/parsing-config
+   set-exchange-rate.parser/parsing-config))
 
 (s/def ::entries.spec/entry (entries.spec/config->spec entry-parsing-config))
 
