@@ -72,9 +72,9 @@
 
    <whitespace> = #'\\h+';
 
-   words = word (whitespace word)*;
    <word> = #'(\\w|\\p{L}|-|&)+';
 
+   pre-tag = #'.+(?=(\\h+#)?)';
    tags = tag (<whitespace> tag)*;
    tag = <'#'> word ('/' word)*;
 
@@ -118,8 +118,7 @@
 (def transform-number bigdec)
 
 (def base-transform-map
-  (create-transform-map {:words            str
-                         :date             date-time/str->date
+  (create-transform-map {:date             date-time/str->date
                          :tag              str
                          :tags             transform-tags
                          :integer          transform-integer
