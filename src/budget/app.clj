@@ -50,7 +50,7 @@
                      entries.processor/initialize-state!
                      (assimilate-entries! entries))
           reports-generator (reporter/reports-graph {:state state})
-          default-report-types [:assets-liabilities-balances :budget-goal-balances :current-net-worth :budget-allocation]
+          default-report-types [:assets-liabilities-balances :budget-goal-balances :consolidated-net-worth :budget-allocation]
           reports (map (juxt identity (partial get reports-generator)) default-report-types)]
       (doseq [[report-type report] reports]
         (reporter/present! report-type report)
@@ -70,7 +70,7 @@
 
 (comment
   (do (run-from-cli! {:file "input.budget" :process-future? true}) nil)
-  (:reports (run-from-cli! {:file "input.budget"}))
+  ((juxt (comp keys :state)) (run-from-cli! {:file "input.budget"}))
 
   (ex-message *e)
   (ex-data *e))

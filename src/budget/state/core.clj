@@ -65,7 +65,15 @@
                       (map model.ds.transaction/transaction->ds)
                       flatten
                       (into [])))
-   this))
+   this)
+
+  state.protocols/ExchangeRateStore
+  (exchange-rates
+   [{:state/keys [exchange-rates]}]
+   exchange-rates)
+  (set-exchange-rates!
+   [this exchange-rates]
+   (update this :state/exchange-rates merge exchange-rates)))
 
 (defn new-datascript-state
   ([schema] (new-datascript-state schema {}))

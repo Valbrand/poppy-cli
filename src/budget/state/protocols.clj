@@ -13,5 +13,11 @@
   (put-transaction! [this transaction])
   (put-transactions! [this transactions]))
 
+(defprotocol ExchangeRateStore
+  (exchange-rates [this])
+
+  (set-exchange-rates! [this exchange-rates]))
+
 (s/def ::state (s/and #(satisfies? AccountStore %)
-                      #(satisfies? TransactionStore %)))
+                      #(satisfies? TransactionStore %)
+                      #(satisfies? ExchangeRateStore %)))

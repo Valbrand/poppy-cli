@@ -2,7 +2,6 @@
   (:require [budget.entries.new-transaction.spec :as spec]
             [budget.model.transaction :as model.transaction]
             [budget.state.protocols :as state.protocols]
-            [budget.utils :as utils]
             [net.danielcompton.defn-spec-alpha :as ds]))
 
 (ds/defn ^:private entry->model :- ::model.transaction/transaction
