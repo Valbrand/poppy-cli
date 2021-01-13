@@ -1,2 +1,3 @@
 {:lint-as {net.danielcompton.defn-spec-alpha/defn schema.core/defn
-           budget.parser.core/defparser clojure.core/def}}
+           budget.parser.core/defparser           clojure.core/def
+           plumbing.core/fnk                      clojure.core/fn}}

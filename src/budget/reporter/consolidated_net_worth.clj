@@ -21,7 +21,6 @@
     (reporter.common/print-monetary-values report)))
 
 (comment
-  (present! (report {"assets" {"assets/nuconta" [{:value 500M :currency :BRL}]
-                               "assets/nuconta2" [{:value -1500.75M :currency :USD}]}
-                     "liabilities" {"liabilities/cc" [{:value -400M :currency :BRL}]}
-                     "equity" {"assets/nuconta" [{:value 100M :currency :BRL}]}})))
+  (present! (report [{:value 100M :currency :BRL}
+                     {:value 50M :currency :USD}]
+                    {:USD {:value 5.7M :currency :BRL}})))
