@@ -1,7 +1,6 @@
-(ns budget.reporter.current-net-worth
+(ns budget.reporter.consolidated-net-worth
   (:require [budget.logic.money :as logic.money]
             [budget.model.money :as model.money]
-            [budget.reporter.account-balances :as reporter.account-balances]
             [budget.reporter.common :as reporter.common :refer [println' indent]]
             [clojure.spec.alpha :as s]
             [net.danielcompton.defn-spec-alpha :as ds]))
@@ -9,11 +8,10 @@
 (s/def ::report (s/coll-of ::model.money/money))
 
 (ds/defn report :- ::report
-  [account-balances :- ::reporter.account-balances/report]
-  (->> account-balances
-       (filter (comp #{"assets" "liabilities"} first))
-       (map (comp vals second))
-       flatten
+  [net-worth :- (s/coll-of ::model.money/money)
+   exchange-rates :- (s/map-of ::model.money/currency ::model.money/money)]
+  (->> net-worth
+       (map #(logic.money/convert % exchange-rates))
        logic.money/aggregate-monetary-values))
 
 (ds/defn present!

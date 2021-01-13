@@ -73,7 +73,7 @@
    exchange-rates)
   (set-exchange-rates!
    [this exchange-rates]
-   (assoc this :state/exchange-rates exchange-rates)))
+   (update this :state/exchange-rates merge exchange-rates)))
 
 (defn new-datascript-state
   ([schema] (new-datascript-state schema {}))

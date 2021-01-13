@@ -1,7 +1,8 @@
 (ns budget.reporter.core
   (:require [budget.reporter.account-balances :as reporter.account-balances]
             [budget.reporter.budget-allocation :as reporter.budget-allocation]
-            [budget.reporter.current-net-worth :as reporter.current-net-worth]
+            [budget.reporter.consolidated-net-worth :as reporter.consolidated-net-worth]
+            [budget.reporter.logic :as reporter.logic]
             [budget.state.protocols :as state.protocols]
             [plumbing.core :refer [fnk]]
             [plumbing.graph :as graph]))
@@ -16,9 +17,13 @@
     (fnk [state]
       (partial state.protocols/transactions-by-account-name state))
 
-    :account-balances
-    (fnk [all-accounts transactions-for-account]
-      (reporter.account-balances/report all-accounts transactions-for-account))
+    :exchange-rates
+    (fnk [state]
+      (state.protocols/exchange-rates state))
+
+    :net-worth
+    (fnk [account-balances]
+      (reporter.logic/net-worth account-balances))
 
     :assets-liabilities-balances
     (fnk [account-balances]
@@ -28,13 +33,17 @@
     (fnk [account-balances]
       account-balances)
 
-    :current-net-worth
-    (fnk [account-balances]
-      (reporter.current-net-worth/report account-balances))
+    :account-balances
+    (fnk [all-accounts transactions-for-account]
+      (reporter.account-balances/report all-accounts transactions-for-account))
+
+    :consolidated-net-worth
+    (fnk [net-worth exchange-rates]
+      (reporter.consolidated-net-worth/report net-worth exchange-rates))
 
     :budget-allocation
-    (fnk [account-balances current-net-worth]
-      (reporter.budget-allocation/report account-balances current-net-worth))}))
+    (fnk [account-balances net-worth]
+      (reporter.budget-allocation/report account-balances net-worth))}))
 
 (def ^:private presenters
   {:account-balances            reporter.account-balances/present!
@@ -42,7 +51,7 @@
    :budget-goal-balances        (partial reporter.account-balances/present! {:account-types        ["budget" "goal"]
                                                                              :report-title         "Budget allocations"
                                                                              :omit-empty-accounts? true})
-   :current-net-worth           reporter.current-net-worth/present!
+   :consolidated-net-worth      reporter.consolidated-net-worth/present!
    :budget-allocation           reporter.budget-allocation/present!})
 
 (defn present!
