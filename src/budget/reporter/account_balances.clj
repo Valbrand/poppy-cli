@@ -1,6 +1,7 @@
 (ns budget.reporter.account-balances
   (:require [budget.logic.account :as logic.account]
             [budget.logic.money :as logic.money]
+            [budget.logic.transaction :as logic.transaction]
             [budget.model.account :as model.account]
             [budget.model.money :as model.money]
             [budget.model.transaction :as model.transaction]
@@ -17,13 +18,6 @@
 (s/def ::omit-empty-accounts? boolean?)
 (s/def ::report-options (s/keys :req-un [::account-types] :opt-un [::report-title ::omit-empty-accounts?]))
 
-(ds/defn movements-for-account :- (s/coll-of ::model.transaction/movement)
-  [account-name :- :account/name
-   transaction :- ::model.transaction/transaction]
-  (->> transaction
-       :transaction/movements
-       (filter #(= account-name (:movement/account %)))))
-
 (ds/defn aggregate-movements-value :- (s/coll-of ::model.money/money)
   [movements :- (s/coll-of ::model.transaction/movement)]
   (->> movements
@@ -34,7 +28,7 @@
   [account-name :- :account/name
    transactions :- (s/coll-of ::model.transaction/transaction)]
   (->> transactions
-       (map (partial movements-for-account account-name))
+       (map (partial logic.transaction/movements-for-account account-name))
        (map aggregate-movements-value)
        flatten
        logic.money/aggregate-monetary-values))

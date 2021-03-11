@@ -5,20 +5,27 @@
             [clojure.spec.alpha :as s]
             [net.danielcompton.defn-spec-alpha :as ds]))
 
-(s/def ::report (s/coll-of ::model.money/money))
+(s/def ::base-net-worth (s/coll-of ::model.money/money))
+(s/def ::consolidated-net-worth (s/coll-of ::model.money/money))
+(s/def ::report (s/keys :req-un [::base-net-worth ::consolidated-net-worth]))
 
 (ds/defn report :- ::report
   [net-worth :- (s/coll-of ::model.money/money)
    exchange-rates :- (s/map-of ::model.money/currency ::model.money/money)]
-  (->> net-worth
-       (map #(logic.money/convert % exchange-rates))
-       logic.money/aggregate-monetary-values))
+  {:base-net-worth         net-worth
+   :consolidated-net-worth (->> net-worth
+                                (map #(logic.money/convert % exchange-rates))
+                                logic.money/aggregate-monetary-values)})
 
 (ds/defn present!
   [report :- ::report]
-  (println' "Net worth:")
-  (indent 2
-    (reporter.common/print-monetary-values report)))
+  (let [{:keys [base-net-worth consolidated-net-worth]} report]
+    (println' "Net worth:")
+    (indent 2
+      (reporter.common/print-monetary-values base-net-worth))
+    (println' "Consolidated net worth:")
+    (indent 2
+      (reporter.common/print-monetary-values consolidated-net-worth))))
 
 (comment
   (present! (report [{:value 100M :currency :BRL}

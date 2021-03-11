@@ -9,6 +9,7 @@
 
 (defprotocol TransactionStore
   (transactions-by-account-name [this account-name])
+  (transactions-by-account-types [this account-types])
 
   (put-transaction! [this transaction])
   (put-transactions! [this transactions]))

@@ -3,6 +3,7 @@
             [budget.reporter.budget-allocation :as reporter.budget-allocation]
             [budget.reporter.consolidated-net-worth :as reporter.consolidated-net-worth]
             [budget.reporter.logic :as reporter.logic]
+            [budget.reporter.net-worth-changes :as reporter.net-worth-changes]
             [budget.state.protocols :as state.protocols]
             [plumbing.core :refer [fnk]]
             [plumbing.graph :as graph]))
@@ -16,6 +17,10 @@
     :transactions-for-account
     (fnk [state]
       (partial state.protocols/transactions-by-account-name state))
+
+    :transactions-for-account-types
+    (fnk [state]
+      (partial state.protocols/transactions-by-account-types state))
 
     :exchange-rates
     (fnk [state]
@@ -43,7 +48,11 @@
 
     :budget-allocation
     (fnk [account-balances net-worth]
-      (reporter.budget-allocation/report account-balances net-worth))}))
+      (reporter.budget-allocation/report account-balances net-worth))
+
+    :net-worth-changes
+    (fnk [transactions-for-account-types]
+      (reporter.net-worth-changes/report transactions-for-account-types))}))
 
 (def ^:private presenters
   {:account-balances            reporter.account-balances/present!
@@ -52,7 +61,8 @@
                                                                              :report-title         "Budget allocations"
                                                                              :omit-empty-accounts? true})
    :consolidated-net-worth      reporter.consolidated-net-worth/present!
-   :budget-allocation           reporter.budget-allocation/present!})
+   :budget-allocation           reporter.budget-allocation/present!
+   :net-worth-changes           reporter.net-worth-changes/present!})
 
 (defn present!
   [report-type report]

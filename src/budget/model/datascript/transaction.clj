@@ -6,7 +6,6 @@
 
 (def schema
   {:movement/account      {:db/valueType   :db.type/ref
-                           :ref-attr       :account/name
                            :db/cardinality :db.cardinality/one
                            :db/doc         "Account being affected by the movement"}
    :movement/value        {:db/valueType   :db.type/ref

@@ -4,6 +4,7 @@
             [budget.model.datascript.money :as model.ds.money]
             [budget.model.datascript.transaction :as model.ds.transaction]
             [budget.utils :as utils]
+            [clojure.string :as str]
             [datascript.core :as db]))
 
 (defprotocol IState
@@ -50,6 +51,17 @@
                          [?transaction :transaction/movements ?movement]]}
                @connection account-name)
          (map (comp model.ds.transaction/ds->transaction first))))
+  (transactions-by-account-types
+   [{:state/keys [connection] :as this} account-types]
+   (validate-initialization! this)
+   (->> (db/q '{:find [(pull ?transaction [* {:transaction/movements [* {:movement/account [:account/name]}]}])]
+                :in [$ [?account-type ...]]
+                :where [[?account :account/name ?account-name]
+                        [(clojure.string/starts-with? ?account-name ?account-type)]
+                        [?movement :movement/account ?account]
+                        [?transaction :transaction/movements ?movement]]}
+              @connection account-types)
+        (map (comp model.ds.transaction/ds->transaction first))))
   (put-transaction!
     [{:state/keys [connection] :as this} transaction]
     (validate-initialization! this)
@@ -97,6 +109,17 @@
                                                                       :value #:money{:value -100N, :currency :BRL}}
                                                            #:movement{:account [:account/name "assets/nuconta"]
                                                                       :value #:money{:value 100N, :currency :BRL}}]}]))
+
+  (require '[clojure.string :as str])
+
+  (db/q '{:find [(pull ?transaction [*])]
+          :in [$ [?account-type ...]]
+          :where [[?account :account/name ?account-name]
+                  [(str/starts-with? ?account-name ?account-type)]
+                  [?movement :movement/account ?account]
+                  [?transaction :transaction/movements ?movement]]}
+        @(:state/connection state)
+        #{"equity"})
 
   (db/q '{:find  [(pull ?account [* {:transaction/movements [* {:movement/account [:account/name]}]}])]
           :in    [$ ?account-name]
