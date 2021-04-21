@@ -102,7 +102,13 @@
   (parse-input-file! options))
 
 (comment
-  (do (run-from-cli! {:file "input.budget" :process-future? true}) nil)
+  (do
+    (run-from-cli! {:file "/Users/valbrand/MEGA/data.poppy"
+                    :process-future? false
+                    :replace-reports [:net-worth-changes]})
+    nil)
+  *e
+
   ((juxt (comp keys :state)) (run-from-cli! {:file "input.budget"}))
 
   (ex-message *e)

@@ -6,19 +6,17 @@
             [budget.model.date-time :as model.date-time]
             [budget.model.money :as model.money]
             [budget.model.transaction :as model.transaction]
-            [budget.reporter.common :refer [indent println' print-monetary-values]]
+            [budget.reporter.common :as reporter.common :refer [indent println' print-monetary-values]]
             [clojure.set :as set]
             [clojure.spec.alpha :as s]
             [net.danielcompton.defn-spec-alpha :as ds]))
 
-(s/def ::net-worth-delta (s/cat :in any?
+(s/def ::net-worth-delta (s/cat :in (s/coll-of ::model.money/money)
                                 :out (s/coll-of ::model.money/money)
                                 :total (s/coll-of ::model.money/money)))
-(s/def ::monthly-report (s/tuple ::model.date-time/date ::net-worth-delta))
-(s/def ::yearly-report (s/tuple int? ::net-worth-delta))
-(s/def ::periodic-report (s/or :yearly-report ::yearly-report
-                               :monthly-report ::monthly-report))
-(s/def ::report (s/coll-of ::periodic-report))
+(s/def ::monthly-report (reporter.common/monthly-report-spec ::net-worth-delta))
+(s/def ::yearly-report (reporter.common/yearly-report-spec ::net-worth-delta))
+(s/def ::report (s/coll-of (reporter.common/periodic-report-spec ::net-worth-delta)))
 
 (def ^:private relevant-account-types #{"assets" "liabilities"})
 
@@ -66,37 +64,6 @@
                [[] [] []])
        (map logic.money/aggregate-monetary-values)))
 
-(ds/defn ^:private sorted-report :- ::report
-  [monthly-reports :- (s/coll-of ::monthly-report)
-   yearly-reports :- (s/coll-of ::yearly-report)]
-  (loop [[[month-year :as monthly] & rest-monthly :as monthly-reports] (sort-by first monthly-reports)
-         [[year :as yearly] & rest-yearly :as yearly-reports] (sort-by first yearly-reports)
-         result []]
-    (cond
-      (and (nil? monthly)
-           (nil? yearly))
-      result
-
-      (nil? monthly)
-      (recur rest-monthly
-             rest-yearly
-             (conj result yearly))
-
-      (nil? yearly)
-      (recur rest-monthly
-             rest-yearly
-             (conj result monthly))
-
-      (< year (model.date-time/year month-year))
-      (recur monthly-reports
-             rest-yearly
-             (conj result yearly))
-      
-      :else
-      (recur rest-monthly
-             yearly-reports
-             (conj result monthly)))))
-
 (ds/defn report :- ::report
   [transactions-for-account-types :- (s/fspec :args (s/cat :account-types (s/coll-of ::model.account/account-type))
                                               :ret (s/coll-of ::model.transaction/transaction))]
@@ -112,11 +79,11 @@
                             (map (juxt first
                                        (comp monthly-reports->yearly-delta
                                              second))))]
-    (sorted-report deltas-by-month-year deltas-by-year)))
+    (reporter.common/sorted-report deltas-by-month-year deltas-by-year)))
 
 (ds/defn ^:private present-net-worth-delta!
   [delta :- ::net-worth-delta]
-  (let [{:keys [in out total]} delta]
+  (let [[in out total] delta]
     (println' "In:")
     (indent 2
       (print-monetary-values in))
@@ -127,33 +94,10 @@
     (indent 2
       (print-monetary-values total))))
 
-(ds/defn ^:private present-monthly-report!
-  [report :- ::monthly-report]
-  (let [[month-year delta] report]
-    (println' (model.date-time/month-year-string month-year))
-    (indent 2
-      (present-net-worth-delta! delta))))
-
-(ds/defn ^:private present-yearly-report!
-  [report :- ::yearly-report]
-  (let [[year delta] report]
-    (println' year)
-    (indent 2
-      (present-net-worth-delta! delta))))
-
 (ds/defn present!
   [report :- ::report]
   (println' "Net worth changes:")
-  
-  (indent 2
-    (doseq [periodic-report report
-            :let [[report-type report-contents] (s/conform ::periodic-report periodic-report)]]
-      (case report-type
-        :monthly-report
-        (present-monthly-report! report-contents)
-        
-        :yearly-report
-        (present-yearly-report! report-contents)))))
+  (reporter.common/present-periodic-reports! report present-net-worth-delta!))
 
 (comment
   (sort-by first {1 2 0 3})

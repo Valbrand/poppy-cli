@@ -2,6 +2,7 @@
   (:require [budget.reporter.account-balances :as reporter.account-balances]
             [budget.reporter.budget-allocation :as reporter.budget-allocation]
             [budget.reporter.consolidated-net-worth :as reporter.consolidated-net-worth]
+            [budget.reporter.expenses-by-type :as reporter.expenses-by-type]
             [budget.reporter.logic :as reporter.logic]
             [budget.reporter.net-worth-changes :as reporter.net-worth-changes]
             [budget.state.protocols :as state.protocols]
@@ -52,7 +53,11 @@
 
     :net-worth-changes
     (fnk [transactions-for-account-types]
-      (reporter.net-worth-changes/report transactions-for-account-types))}))
+      (reporter.net-worth-changes/report transactions-for-account-types))
+
+    :expenses-by-type
+    (fnk [transactions-for-account-types]
+      (reporter.expenses-by-type/report transactions-for-account-types))}))
 
 (def ^:private presenters
   {:account-balances            reporter.account-balances/present!
@@ -62,7 +67,8 @@
                                                                              :omit-empty-accounts? true})
    :consolidated-net-worth      reporter.consolidated-net-worth/present!
    :budget-allocation           reporter.budget-allocation/present!
-   :net-worth-changes           reporter.net-worth-changes/present!})
+   :net-worth-changes           reporter.net-worth-changes/present!
+   :expenses-by-type            reporter.expenses-by-type/present!})
 
 (defn present!
   [report-type report]
